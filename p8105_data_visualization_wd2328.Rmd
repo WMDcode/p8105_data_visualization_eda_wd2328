@@ -1,0 +1,139 @@
+---
+title: "Data Visualization"
+author: "William Donovan"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggridges)
+library(p8105.datasets)
+```
+
+Import weather data
+
+```{r}
+data("weather_df")
+```
+
+Make a simple scatter plot
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) +
+  geom_point()
+```
+
+Now add in color for the location
+
+```{r}
+# Can also pipe in the dataframe for a different style
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point()
+```
+
+Change the opacity of the points
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = 0.5) # Set the alpha for opacity
+```
+
+Add a curve/line
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(se = FALSE) # add geom_smooth for a nice line
+```
+
+Change where the color is assigned so that only one line appears
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point(alpha = 0.5, aes(color = name)) + # Color added ONLY to geom_point
+  geom_smooth(se = FALSE)
+```
+
+Show preciptitation based on SIZE
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point(alpha = 0.5, aes(color = name, size = prcp)) + # add size to change the point size
+  geom_smooth(se = FALSE)
+```
+
+Now facet the plots in order to better visualize
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = 0.4, aes(size = prcp)) +
+  geom_smooth(se = FALSE) +
+  facet_grid((name ~ .)) # ". ~ name" would produce the plots in a row rather than a column
+```
+
+### Learning Assesment
+
+```{r}
+weather_df |>
+  filter(name == "Waterhole_WA") |>
+  mutate(
+    tmin_f = (5/9)*(tmin-32),
+    tmax_f = (5/9)*(tmax-32)) |>
+  ggplot(aes(x = tmin_f, y = tmax_f)) +
+  geom_point(alpha = 0.4, aes(size = prcp)) +
+  geom_smooth(se = FALSE, method = "lm", color = "black")
+```
+
+Geom_hex is kinda cool
+
+```{r}
+weather_df |>
+  filter(name == "Waterhole_WA") |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_hex()
+```
+
+Density plot
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmax)) +
+  geom_density(aes(fill = name), alpha = 0.4)
+```
+
+Violin plot
+
+```{r}
+weather_df |>
+  ggplot(aes(x = name, y = tmax)) +
+  geom_violin(aes(fill = name), alpha = 0.6)
+```
+
+Ridge plot
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmax, y = name)) +
+  geom_density_ridges(aes(fill = name), alpha = 0.8)
+```
+
+### Learning Assesment maybe?
+
+```{r}
+weather_df |>
+  filter(date <= "2021-12-31") |>
+  filter(prcp != 0) |>
+  ggplot(aes(x = date, y = prcp)) +
+  geom_point(aes(color = name), alpha = 0.5) +
+  facet_grid(name ~ .)
+```
+
+
+
+
