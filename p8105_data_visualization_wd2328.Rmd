@@ -134,6 +134,161 @@ weather_df |>
   facet_grid(name ~ .)
 ```
 
+# Data Visualization Lecture 2
+
+## More advanced stuff
+
+### Add labels with labs()
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name)) +
+  labs(
+    x = "Minimum daily temperature (C)",
+    y = "Maximum daily temperature (C)",
+    title = "Temperature Ranges",
+    color = "Location",
+    caption = "Data from NOAA"
+  )
+```
+
+### Adjust the scales
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name)) +
+  labs(
+    x = "Minimum daily temperature",
+    y = "Maximum daily temperature (C)",
+    title = "Temperature Ranges",
+    color = "Location",
+    caption = "Data from NOAA") +
+  scale_x_continuous(
+    breaks = c(-15, 0, 15),
+    labels = c("-15 C", "0 C", "15 C")
+  )
+```
+
+### Change color using Viridis package
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name)) +
+  labs(
+    x = "Minimum daily temperature",
+    y = "Maximum daily temperature (C)",
+    title = "Temperature Ranges",
+    color = "Location",
+    caption = "Data from NOAA") +
+  scale_x_continuous(
+    breaks = c(-15, 0, 15),
+    labels = c("-15 C", "0 C", "15 C")) +
+  viridis::scale_color_viridis(
+    discrete = TRUE,
+    alpha = 0.4)
+```
+
+### Move the legend
+
+```{r}
+weather_df |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name)) +
+  labs(
+    x = "Minimum daily temperature",
+    y = "Maximum daily temperature (C)",
+    title = "Temperature Ranges",
+    color = "Location",
+    caption = "Data from NOAA") +
+  scale_x_continuous(
+    breaks = c(-15, 0, 15),
+    labels = c("-15 C", "0 C", "15 C")) +
+  viridis::scale_color_viridis(
+    discrete = TRUE,
+    alpha = 0.7) +
+  theme(legend.position = "bottom")
+```
+
+### Save plot as an object and change the theme
+
+```{r}
+ggp_temp_scatter = 
+  weather_df |>
+    ggplot(aes(x = tmin, y = tmax)) +
+    geom_point(aes(color = name)) +
+    labs(
+      x = "Minimum daily temperature",
+      y = "Maximum daily temperature (C)",
+      title = "Temperature Ranges",
+      color = "Location",
+      caption = "Data from NOAA") +
+    scale_x_continuous(
+      breaks = c(-15, 0, 15),
+      labels = c("-15 C", "0 C", "15 C")) +
+    viridis::scale_color_viridis(
+      discrete = TRUE,
+      alpha = 0.7)
+    
+
+ggp_temp_scatter +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+## Patchwork
+
+### Make three plots and combine using patchwork
+
+```{r}
+library(patchwork)
+
+ggp_prcp_density = 
+  weather_df |>
+    filter(prcp > 0) |>
+    ggplot(aes(x = prcp)) +
+    geom_density(aes(fill = name), alpha = 0.5)
+
+ggp_prcp_density
+
+(weather_scatterplot + ggp_prcp_density)
+
+```
 
 
+## New Challenge
+
+```{r}
+pups_df = read_csv("data/FAS_pups.csv",
+                   na = c("NA", "", " ", "."),
+                   skip = 3) |>
+  janitor::clean_names() |>
+  mutate(sex = case_match(
+    sex,
+    1 ~ "Male",
+    2 ~ "Female"))
+
+pulse_df = haven::read_sas("data/public_pulse_data.sas7bdat")
+
+litters_df = read_csv("data/FAS_litters.csv",
+                   na = c("NA", "", " ", ".")) |>
+  janitor::clean_names() |>
+  separate(group, into = c("dose", "tx_day"), sep = 3)
+
+fas_df = left_join(pups_df, litters_df, by = "litter_number")
+
+fas_df = fas_df |>
+  select(pd_ears:tx_day) |>
+  pivot_longer(
+    pd_ears:pd_walk,
+    names_to = "outcome",
+    names_prefix = "pd_",
+    values_to = "pn_day") |>
+  drop_na()
+
+View(fas_df)
+
+```
 
